@@ -9,8 +9,7 @@ import {
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
-import _ from 'lodash';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import GroupList from '../components/GroupList';
 
 function makeGroups(array, numberOfGroups) {
@@ -29,8 +28,8 @@ export default function CreateGroupsPages() {
     { id: 1, firstName: 'John', lastName: 'Doe' },
     { id: 2, firstName: 'Jane', lastName: 'Doe' },
   ]);
-  const [groupList, setGroupList] = useState([]);
   const [numberOfGroupsToCreate, setNumberOfGroupsToCreate] = useState(2);
+  const [groupList] = useState(makeGroups(students, numberOfGroupsToCreate));
   const [randomizationActivited, setRandomizationActivated] = useState(true);
 
   const validNumberOfGroups = new Array(students.length)
@@ -47,14 +46,6 @@ export default function CreateGroupsPages() {
     if (parsed > 0 && parsed <= students.length)
       setNumberOfGroupsToCreate(parsed);
   };
-
-  useEffect(() => {
-    const list = randomizationActivited ? _.shuffle(students) : students;
-    const groups = makeGroups(list, numberOfGroupsToCreate);
-    setGroupList(
-      groups.map((members, index) => ({ name: `GR${index + 1}`, members }))
-    );
-  }, [numberOfGroupsToCreate, students, randomizationActivited]);
 
   return (
     <>
