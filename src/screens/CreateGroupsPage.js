@@ -1,3 +1,5 @@
+import _ from 'lodash';
+import axios from 'axios';
 import {
   FormControl,
   IconButton,
@@ -6,10 +8,13 @@ import {
   Select,
   Switch,
 } from '@material-ui/core';
+import { CircularProgress } from '@mui/material';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import KlassmateAPI from '../KlassmateAPI';
+
 import GroupList from '../components/GroupList';
 
 function makeGroups(array, numberOfGroups) {
@@ -23,14 +28,14 @@ function makeGroups(array, numberOfGroups) {
   return groups;
 }
 
-export default function CreateGroupsPages() {
-  const [students] = useState([
-    { id: 1, firstName: 'John', lastName: 'Doe' },
-    { id: 2, firstName: 'Jane', lastName: 'Doe' },
-  ]);
+export default function CreateGroupsPage() {
+  const [students, setStudents] = useState([]);
   const [numberOfGroupsToCreate, setNumberOfGroupsToCreate] = useState(2);
-  const [groupList] = useState(makeGroups(students, numberOfGroupsToCreate));
+  const [groupList, setGroupList] = useState(
+    makeGroups(students, numberOfGroupsToCreate)
+  );
   const [randomizationActivited, setRandomizationActivated] = useState(true);
+  const [studentsLoading, setStudentsLoading] = useState(false);
 
   const validNumberOfGroups = new Array(students.length)
     .fill()
@@ -46,6 +51,35 @@ export default function CreateGroupsPages() {
     if (parsed > 0 && parsed <= students.length)
       setNumberOfGroupsToCreate(parsed);
   };
+
+  useEffect(() => {
+    const { CancelToken } = axios;
+    const source = CancelToken.source();
+    setStudentsLoading(true);
+
+    KlassmateAPI.get('/students', { cancelToken: source.token })
+      .then((res) => {
+        setStudents(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      })
+      .finally(() => {
+        setStudentsLoading(false);
+      });
+
+    return () => {
+      source.cancel();
+    };
+  }, []);
+
+  useEffect(() => {
+    const studentList = randomizationActivited ? _.shuffle(students) : students;
+    setGroupList(makeGroups(studentList, numberOfGroupsToCreate));
+  }, [students, numberOfGroupsToCreate, randomizationActivited]);
+
+  if (studentsLoading) return <CircularProgress />;
+  if (students.length === 0) return <div>No students yet</div>;
 
   return (
     <>
