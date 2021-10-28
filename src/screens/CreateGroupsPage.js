@@ -79,7 +79,13 @@ export default function CreateGroupsPage() {
   }, [students, numberOfGroupsToCreate, randomizationActivited]);
 
   if (studentsLoading) return <CircularProgress />;
-  if (students.length === 0) return <div>No students yet</div>;
+  if (students.length === 0)
+    return (
+      <div>
+        At least 2 students must be registered to make groups, invite people to
+        start making groups
+      </div>
+    );
 
   return (
     <>
